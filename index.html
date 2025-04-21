@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>모무찌 - 재료 기반 요리 추천</title>
+  <style>
+    body { font-family: 'Apple SD Gothic Neo', sans-serif; padding: 30px; background-color: #fffaf4; color: #333; }
+    h1 { font-size: 28px; color: #ff7f50; margin-bottom: 20px; }
+    input, button { padding: 12px; font-size: 16px; border-radius: 8px; border: 1px solid #ccc; }
+    button { background-color: #ff7f50; color: white; border: none; cursor: pointer; margin-left: 10px; }
+    button:hover { background-color: #ff6347; }
+    #results { margin-top: 30px; }
+    .recipe { background: #fff; margin-bottom: 15px; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .recipe h3 { margin: 0 0 10px; color: #ff6347; font-size: 20px; }
+    .section-title { font-weight: bold; margin-top: 10px; margin-bottom: 5px; }
+    .step { margin: 8px 0; }
+    .step img { display: block; margin-top: 5px; max-width: 100%; border-radius: 8px; }
+    .pagination { margin-top: 20px; }
+    .pagination button { margin-right: 5px; background-color: #eee; color: #333; }
+    .pagination button.active { background-color: #ff7f50; color: white; }
+  </style>
+</head>
+<body>
+  <h1>모무찌: 내 재료로 할 수 있는 요리</h1>
+  <input type="text" id="ingredients" placeholder="예: 계란, 양파">
+  <button onclick="findRecipes()">요리 찾기</button>
+  <div id="results"></div>
+  <div class="pagination" id="pagination"></div>
+
+  <script>
+    const recipes = [
+      {
+        name: "1. 양파 계란 덮밥",
+        servings: "1인분",
+        ingredients: ["양파 1개 (약 150g)", "계란 2개", "밥 1공기", "간장 1큰술", "참기름 약간"],
+        steps: [
+          { text: "양파를 반으로 가르고 얇게 채 썬다", image: "images/step1.png" },
+          { text: "팬에 식용유를 두르고 중불에서 양파가 투명해질 때까지 볶는다", image: "images/step2.png" },
+          { text: "계란을 풀어 팬에 넣고 저어가며 익힌다. 반숙도 가능", image: "images/step3.png" },
+          { text: "그릇에 따뜻한 밥을 담고 볶은 양파와 계란을 얹는다", image: "images/step4.png" },
+          { text: "간장 1큰술과 참기름 약간을 골고루 뿌린다", image: "images/step5.png" }
+        ],
+        tip: "계란은 너무 오래 익히면 퍽퍽할 수 있어요. 반숙으로 마무리하면 더 촉촉해요. 김가루나 쪽파를 올리면 맛과 비주얼이 업그레이드됩니다."
+      },
+      {
+        name: "2. 계란찜",
+        servings: "2인분",
+        ingredients: ["계란 3개", "물 150ml", "소금 1/4작은술", "참기름 약간"],
+        steps: [
+          { text: "계란을 볼에 깨 넣고 곱게 풀어준다", image: "images/egg_steamed_step1.png" },
+          { text: "계란물에 물과 소금을 넣고 잘 섞은 후 체에 한번 걸러준다", image: "images/egg_steamed_step2.png" },
+          { text: "뚝배기나 전자레인지용 용기에 붓고 뚜껑을 덮은 뒤 약불 또는 전자레인지로 6~7분 익힌다", image: "images/egg_steamed_step3.png" },
+          { text: "완성된 계란찜 위에 참기름 몇 방울을 떨어뜨려 마무리한다", image: "images/egg_steamed_step4.png" }
+        ],
+        tip: "체에 걸러주면 더 부드럽고 곱게 익어요. 쪽파나 참기름을 추가하면 풍미가 좋아요."
+      },
+      {
+        name: "3. 김치볶음",
+        servings: "2인분",
+        ingredients: ["익은 김치 1컵 (약 150g)", "식용유 1큰술", "설탕 1작은술", "고춧가루 1/2작은술"],
+        steps: [
+          { text: "김치를 먹기 좋은 크기로 자른다", image: "images/kimchi_stirfry_step1.png" },
+          { text: "팬에 식용유를 두르고 김치를 중불에서 3~4분 볶는다", image: "images/kimchi_stirfry_step2.png" },
+          { text: "설탕과 고춧가루를 넣고 더 볶는다", image: "images/kimchi_stirfry_step3.png" },
+          { text: "물 없이 자작하게 졸이듯 볶아 마무리한다", image: "images/kimchi_stirfry_step4.png" }
+        ],
+        tip: "묵은지를 사용하면 깊은 맛이 나요. 참치나 돼지고기를 추가하면 풍성해져요."
+      },
+      {
+        name: "4. 두부조림",
+        servings: "2~3인분",
+        ingredients: ["두부 1모 (약 300g)", "간장 2큰술", "물 4큰술", "다진 마늘 1작은술", "고춧가루 1작은술", "식용유 1큰술"],
+        steps: [
+          { text: "두부를 1.5cm 두께로 썰고 키친타월로 물기를 제거한다", image: "images/tofu_braise_step1.png" },
+          { text: "팬에 식용유를 두르고 두부를 앞뒤로 노릇하게 굽는다", image: "images/tofu_braise_step2.png" },
+          { text: "작은 볼에 간장, 물, 다진 마늘, 고춧가루를 넣고 양념장을 만든다", image: "images/tofu_braise_step3.png" },
+          { text: "두부 위에 양념장을 부어 중불에서 5~7분 졸인다", image: "images/tofu_braise_step4.png" }
+        ],
+        tip: "물 대신 다시마육수를 사용하면 더 깊은 맛이 나요. 양파나 청양고추를 곁들이면 좋아요."
+      }
+    ];
+
+    let currentPage = 1;
+    const itemsPerPage = 10;
+
+    function findRecipes() {
+      const input = document.getElementById("ingredients").value;
+      const inputIngredients = input.split(",").map(item => item.trim());
+      const matchedRecipes = recipes.filter(recipe =>
+        recipe.ingredients.every(ingredient => inputIngredients.includes(ingredient.replace(/\s*\([^)]*\)/g, "").split(" ")[0]))
+      );
+
+      currentPage = 1;
+      showRecipes(matchedRecipes);
+    }
+
+    function showRecipes(matchedRecipes) {
+      const resultDiv = document.getElementById("results");
+      const paginationDiv = document.getElementById("pagination");
+      resultDiv.innerHTML = "";
+      paginationDiv.innerHTML = "";
+
+      if (matchedRecipes.length === 0) {
+        resultDiv.innerHTML = "<p>해당 재료로 만들 수 있는 요리가 없어요.</p>";
+        return;
+      }
+
+      const start = (currentPage - 1) * itemsPerPage;
+      const end = start + itemsPerPage;
+      const paginatedRecipes = matchedRecipes.slice(start, end);
+
+      paginatedRecipes.forEach(recipe => {
+        const recipeDiv = document.createElement("div");
+        recipeDiv.className = "recipe";
+
+        let html = `<h3>${recipe.name.replace(/^\d+\.\s*/, "")}</h3>`;
+        if (recipe.servings) {
+          html += `<p><strong>🧂 분량:</strong> ${recipe.servings}</p>`;
+        }
+        html += `<div class='section-title'>재료</div><ul>`;
+        recipe.ingredients.forEach(ing => { html += `<li>${ing}</li>`; });
+        html += `</ul>`;
+
+        html += `<div class='section-title'>요리 순서</div>`;
+        recipe.steps.forEach(step => {
+          html += `<div class='step'>${step.text}<br><img src="${step.image}" alt="${step.text}"></div>`;
+        });
+
+        html += `<div class='section-title'>팁</div><p>${recipe.tip}</p>`;
+
+        recipeDiv.innerHTML = html;
+        resultDiv.appendChild(recipeDiv);
+      });
+
+      const pageCount = Math.ceil(matchedRecipes.length / itemsPerPage);
+      for (let i = 1; i <= pageCount; i++) {
+        const btn = document.createElement("button");
+        btn.innerText = i;
+        btn.className = (i === currentPage) ? "active" : "";
+        btn.onclick = () => {
+          currentPage = i;
+          showRecipes(matchedRecipes);
+        };
+        paginationDiv.appendChild(btn);
+      }
+    }
+  </script>
+</body>
+</html>
