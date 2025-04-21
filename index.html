@@ -85,15 +85,19 @@
     const itemsPerPage = 10;
 
     function findRecipes() {
-      const input = document.getElementById("ingredients").value;
-      const inputIngredients = input.split(",").map(item => item.trim());
-      const matchedRecipes = recipes.filter(recipe =>
-        recipe.ingredients.every(ingredient => inputIngredients.includes(ingredient.replace(/\s*\([^)]*\)/g, "").split(" ")[0]))
-      );
+  const input = document.getElementById("ingredients").value;
+  const inputIngredients = input.split(",").map(item => item.trim());
 
-      currentPage = 1;
-      showRecipes(matchedRecipes);
-    }
+  const matchedRecipes = recipes.filter(recipe =>
+    recipe.ingredients.every(ingredient => {
+      const base = ingredient.replace(/\s*\([^)]*\)/g, "").split(" ")[0];
+      return inputIngredients.some(input => base.includes(input));
+    })
+  );
+
+  currentPage = 1;
+  showRecipes(matchedRecipes);
+}
 
     function showRecipes(matchedRecipes) {
       const resultDiv = document.getElementById("results");
